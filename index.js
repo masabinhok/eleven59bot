@@ -5,6 +5,7 @@ const { Client, GatewayIntentBits } = require("discord.js");
 const Deadline = require("./models/deadline");
 const {checkDeadlines, listDeadlines} = require("./utils/deadline");
 const mongoose = require("mongoose");
+const Suggestion = require("./models/suggestion");
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -93,8 +94,7 @@ client.on("messageCreate", async (message) => {
     ];
     const reply = replies[Math.floor(Math.random() * replies.length)];
     message.reply(reply);
-  }
-  else if (content.includes("help")) {
+  } else if (content.includes("help")) {
   const helpMessage = `** Hello! I’m Eleven59, your friendly deadline buddy! ⏰**
   I’m here to keep you on track and remind you of those deadlines before they sneak up on you. Let’s face it, most of us love the thrill of the last-minute rush—but hey, I’m here to save you from disaster! 😅
 
@@ -115,6 +115,10 @@ client.on("messageCreate", async (message) => {
   **\`no\`**  
   Not ready to tackle your work yet? I’ll try not to panic, but I might remind you what’s due. 😜  
 
+  **\`suggest [suggestion]\`**
+  Have a cool idea for a new feature? Let me know! I’ll pass it on to my creator, Sabin.
+   Example: \`suggest add games\`  
+
   _I’ll also check your deadlines automatically and remind you one day before submission—because I care. 💕_  
 
   So go ahead, add your deadlines and leave the stress to me.  
@@ -123,9 +127,23 @@ client.on("messageCreate", async (message) => {
   `;
 
     message.reply(helpMessage);
-}
-
-  else {
+  } else if (content.startsWith("suggest ")) {
+      try {
+        const arg = content.split(' ').slice(1);
+        if(arg.length === 0){
+          return message.reply("Please provide a valid command to try. eg. `suggest add_a_new_feature`");
+        }
+        const suggestion = arg.join(' ');
+        await Suggestion.create({
+          name: message.author.username,
+          suggestion: suggestion
+        });
+        message.reply(`Thankyou for the suggestion ${message.author}! I will tell sabin to ${suggestion} in the next update.`);
+      }
+      catch(error){
+        console.log("Error in trying command:", error);
+      }
+  } else {
     message.reply("I didn't understand that. Type `help` to see the commands you can use.");
   }
 });
