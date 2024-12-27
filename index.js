@@ -60,6 +60,31 @@ client.on("messageCreate", async (message) => {
       console.error(err);
       message.reply("There was an error adding the deadline. Please try again.");
     }
+  } else if (content.startsWith("remove ")) {
+      try {
+        const args = content.split(" ").slice(1);
+        if (args.length !== 1) {
+          return message.reply("Please provide the index of the deadline you want to remove (e.g., `remove 1`).");
+        }
+
+        const index = parseInt(args[0], 10);
+        if (isNaN(index) || index < 1) {
+          return message.reply("Please provide a valid index.");
+        }
+
+        const deadlines = await Deadline.find({});
+        if (index > deadlines.length) {
+          return message.reply("No deadline found at the given index.");
+        }
+
+        const deadline = deadlines[index - 1];
+        await Deadline.findByIdAndDelete(deadline._id);
+
+        message.channel.send(`🗑️ Deadline removed for **${deadline.subject}** on **${(deadline.date.toDateString())}**: ${deadline.task}`);
+      }
+      catch(error){
+        console.log("Error in removing deadline:", error);
+      }
   }
 });
 
