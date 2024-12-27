@@ -3,7 +3,7 @@ const app = express();
 require("dotenv").config();
 const { Client, GatewayIntentBits } = require("discord.js");
 const Deadline = require("./models/deadline");
-const checkDeadlines = require("./utils/checkDeadlines");
+const {checkDeadlines, listDeadlines} = require("./utils/deadline");
 const mongoose = require("mongoose");
 
 mongoose
@@ -30,8 +30,14 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
-  if(message.content === "hello") {
-    message.reply("Hello! How can I help you today?");
+  if(message.content.startsWith('hello' || 'hi')) {
+    const user = message.author;
+    message.reply(`Hello ${user}! Have you completed your assignments?`);
+  }
+
+  if(message.content.startsWith('no')) {
+    message.reply(`Oh no ${message.author}! Please complete your assignments on time.`);
+    listDeadlines(message);
   }
 
   if(message.content.startsWith("due ")) {

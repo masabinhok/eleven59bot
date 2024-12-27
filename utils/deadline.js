@@ -38,4 +38,25 @@ const checkDeadlines = async (client) => {
   }
 };
 
-module.exports = checkDeadlines;
+const listDeadlines = async (message)=>{
+try {
+      const deadlines = await Deadline.find({});
+      console.log(deadlines)
+      if(deadlines.length === 0){
+        message.channel.send("No deadlines found!");
+      }
+      else {
+       let response = "Deadlines:\n";
+        deadlines.forEach((deadline, index)=>{
+          response += `${index+1}. **${deadline.subject}** on **${(deadline.date).toDateString()}**: ${deadline.task}\n`;
+        })
+        message.channel.send(response);
+      }
+    }
+    catch(error){
+      console.log("Error in fetching deadlines:", error);
+      message.channel.send("Error in fetching deadlines, Please try again later.");
+    }
+}
+
+module.exports = { checkDeadlines, listDeadlines};
