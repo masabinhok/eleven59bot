@@ -95,16 +95,36 @@ client.on("messageCreate", async (message) => {
     message.reply(reply);
   }
   else if (content.includes("help")) {
-    const helpMessage = `Hello! I am eleven59, your friendly deadline bot. Here are some commands you can use:
-- \`hello\` or \`hi\`: Greet me.
-- \`no\`: Tell me that you haven't completed your assignments.
-- \`due\`: List all deadlines.
-- \`add <subject> <date> <task>\`: Add a deadline (e.g., \`add Math 2024-12-31 Solve equations\`).
-- \`remove <index>\`: Remove a deadline (e.g., \`remove 1\`).
-- \`who created you\` or \`who is your creator\`: Know about my creator.
-- \`help\`: Get help with the commands.`;
+  const helpMessage = `** Hello! I’m Eleven59, your friendly deadline buddy! ⏰**
+  I’m here to keep you on track and remind you of those deadlines before they sneak up on you. Let’s face it, most of us love the thrill of the last-minute rush—but hey, I’m here to save you from disaster! 😅
+
+  Think of me as your **deadline whisperer**, always watching the clock so you don’t have to. 🕒  
+
+  Here are some cool commands to get started:
+
+  **\`add [subject] [date] [task]\`**  
+  Add a new deadline to my memory vault.  
+  Example: \`add Math 2024-12-31 Complete homework\`  
+
+  **\`due\`**  
+  Want to see what’s coming up? Just ask, and I’ll give you a quick rundown of your upcoming deadlines.  
+
+  **\`hello\` / \`hi\`**  
+  Feeling chatty? Say hi, and I’ll be your cheerful companion (and maybe nudge you about those tasks 👀).  
+
+  **\`no\`**  
+  Not ready to tackle your work yet? I’ll try not to panic, but I might remind you what’s due. 😜  
+
+  _I’ll also check your deadlines automatically and remind you one day before submission—because I care. 💕_  
+
+  So go ahead, add your deadlines and leave the stress to me.  
+  Let’s turn last-minute panic into perfectly-timed productivity, because someone said:
+  If you have only 1 hour to complete a task, it will take only 1 hour to complete the task. Lastminute supremacy!!
+  `;
+
     message.reply(helpMessage);
-  }
+}
+
   else {
     message.reply("I didn't understand that. Type `help` to see the commands you can use.");
   }
