@@ -7,6 +7,7 @@ const {checkDeadlines, listDeadlines} = require("./utils/deadline");
 const mongoose = require("mongoose");
 const Suggestion = require("./models/suggestion");
 const PORT = process.env.PORT || 3000;
+const cron = require("node-cron-tz");
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -150,9 +151,12 @@ client.on("messageCreate", async (message) => {
 });
 
 
-setInterval(() => {
-  checkDeadlines(client).catch((err) => console.error(err));
-}, 24 * 60 * 60 * 1000);
+cron.schedule('30 7 * * *', () => {
+    console.log("Scheduled task running at 7:30 AM Kathmandu time!");
+    checkDeadlines(client).catch(console.error);
+}, {
+    timezone: "Asia/Kathmandu",
+});
 
 client.login(process.env.DISCORD_TOKEN);
 app.listen(PORT, () => {
