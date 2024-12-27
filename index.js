@@ -34,7 +34,7 @@ client.on("messageCreate", async (message) => {
     message.reply("Hello! How can I help you today?");
   }
 
-  if(message.content === "due?") {
+  if(message.content.startsWith("due ")) {
     try {
       const deadlines = await Deadline.find({});
       console.log(deadlines)
@@ -55,7 +55,7 @@ client.on("messageCreate", async (message) => {
     }
   }
 
-  if (message.content.startsWith("deadline")) {
+  if (message.content.startsWith("add ")) {
     console.log(message.content);
     const args = message.content.split(" ").slice(1);
     const subject = args[0];
