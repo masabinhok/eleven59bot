@@ -90,7 +90,6 @@ client.on("messageCreate", async (message) => {
       "Sabin le banako ho malai, aafule assignments garna nasamjhiyera.",
       "Jaile assignment xa vanera birsine manxele banako ho malai, Sabin.",
       "Khai yr birse feri sodhata.",
-
     ];
     const reply = replies[Math.floor(Math.random() * replies.length)];
     message.reply(reply);
@@ -105,6 +104,9 @@ client.on("messageCreate", async (message) => {
 - \`who created you\` or \`who is your creator\`: Know about my creator.
 - \`help\`: Get help with the commands.`;
     message.reply(helpMessage);
+  }
+  else {
+    message.reply("I didn't understand that. Type `help` to see the commands you can use.");
   }
 });
 
