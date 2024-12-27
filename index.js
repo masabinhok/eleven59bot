@@ -95,6 +95,17 @@ client.on("messageCreate", async (message) => {
     const reply = replies[Math.floor(Math.random() * replies.length)];
     message.reply(reply);
   }
+  else if (content.includes("help")) {
+    const helpMessage = `Hello! I am eleven59, your friendly deadline bot. Here are some commands you can use:
+- \`hello\` or \`hi\`: Greet me.
+- \`no\`: Tell me that you haven't completed your assignments.
+- \`due\`: List all deadlines.
+- \`add <subject> <date> <task>\`: Add a deadline (e.g., \`add Math 2024-12-31 Solve equations\`).
+- \`remove <index>\`: Remove a deadline (e.g., \`remove 1\`).
+- \`who created you\` or \`who is your creator\`: Know about my creator.
+- \`help\`: Get help with the commands.`;
+    message.reply(helpMessage);
+  }
 });
 
 
