@@ -85,6 +85,15 @@ client.on("messageCreate", async (message) => {
       catch(error){
         console.log("Error in removing deadline:", error);
       }
+  } else if (content.includes("who created you") || content.includes("who is your creator")) {
+    const replies = [
+      "Sabin le banako ho malai, aafule assignments garna nasamjhiyera.",
+      "Jaile assignment xa vanera birsine manxele banako ho malai, Sabin.",
+      "Khai yr birse feri sodhata.",
+
+    ];
+    const reply = replies[Math.floor(Math.random() * replies.length)];
+    message.reply(reply);
   }
 });
 
