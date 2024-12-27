@@ -33,6 +33,28 @@ client.on("messageCreate", async (message) => {
   if(message.content === "hello") {
     message.reply("Hello! How can I help you today?");
   }
+
+  if(message.content === "due?") {
+    try {
+      const deadlines = await Deadline.find({});
+      console.log(deadlines)
+      if(deadlines.length === 0){
+        message.channel.send("No deadlines found!");
+      }
+      else {
+       let response = "Deadlines:\n";
+        deadlines.forEach((deadline, index)=>{
+          response += `${index+1}. **${deadline.subject}** on **${(deadline.date).toDateString()}**: ${deadline.task}\n`;
+        })
+        message.channel.send(response);
+      }
+    }
+    catch(error){
+      console.log("Error in fetching deadlines:", error);
+      message.channel.send("Error in fetching deadlines, Please try again later.");
+    }
+  }
+
   if (message.content.startsWith("deadline")) {
     console.log(message.content);
     const args = message.content.split(" ").slice(1);
