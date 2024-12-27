@@ -2,23 +2,47 @@ const express = require("express");
 const app = express();
 require("dotenv").config();
 const { Client, GatewayIntentBits } = require("discord.js");
-const Deadline = require("./models/deadline");
-const {checkDeadlines, listDeadlines} = require("./utils/deadline");
 const mongoose = require("mongoose");
+const cron = require("node-cron-tz");
+const winston = require("winston");
+const Deadline = require("./models/deadline");
 const Suggestion = require("./models/suggestion");
+const { checkDeadlines, listDeadlines } = require("./utils/deadline");
+
 const PORT = process.env.PORT || 3000;
 
-mongoose
-  .connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log("Connected to the database");
-  })
-  .catch((err) => console.log(err));
-
-app.get("/", (req, res) => {
-  res.send("Hello World");
+// Set up Winston logger
+const logger = winston.createLogger({
+  level: 'info',
+  format: winston.format.combine(
+    winston.format.timestamp(),
+    winston.format.printf(({ timestamp, level, message }) => `${timestamp} [${level.toUpperCase()}]: ${message}`)
+  ),
+  transports: [
+    new winston.transports.Console(),
+    new winston.transports.File({ filename: 'bot.log', level: 'info' }),
+    new winston.transports.File({ filename: 'error.log', level: 'error' }),
+  ],
 });
 
+// Validate environment variables
+if (!process.env.MONGODB_URI || !process.env.DISCORD_TOKEN) {
+  logger.error("Missing required environment variables: MONGODB_URI or DISCORD_TOKEN");
+  process.exit(1);
+}
+
+// Connect to MongoDB
+mongoose
+  .connect(process.env.MONGODB_URI)
+  .then(() => logger.info("Connected to the database"))
+  .catch((err) => logger.error("Database connection error:", err));
+
+// Express server for keep-alive
+app.get("/", (req, res) => {
+  res.send("Hello World! Bot is running.");
+});
+
+// Discord Client
 const client = new Client({
   intents: [
     GatewayIntentBits.Guilds,
@@ -28,74 +52,58 @@ const client = new Client({
 });
 
 client.on("ready", () => {
-  console.log(`Logged in as ${client.user.tag}!`);
+  logger.info(`Logged in as ${client.user.tag}!`);
 });
 
+// Message handling
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
 
   const content = message.content.toLowerCase();
+  const user = message.author;
 
-  if (/^(hello|hi)$/i.test(content)) {
-    const user = message.author;
-    message.reply(`Hello ${user}! Have you completed your assignments?`);
-  } else if (content === "no") {
-    message.reply(`Oh no ${message.author}! Please complete your assignments on time.`);
-    listDeadlines(message);
-  } else if (content.startsWith("due")) {
-    listDeadlines(message);
-  } else if (content.startsWith("add ")) {
-    try {
+  try {
+    if (/^(hello|hi)$/i.test(content)) {
+      message.reply(`Hello ${user}! Have you completed your assignments?`);
+    } else if (content === "no") {
+      message.reply(`Oh no ${user}! Please complete your assignments on time.`);
+      listDeadlines(message);
+    } else if (content.startsWith("due")) {
+      listDeadlines(message);
+    } else if (content.startsWith("add ")) {
       const args = content.split(" ").slice(1);
       if (args.length < 3) {
         return message.reply("Please provide subject, date, and task (e.g., `add Math 2024-12-31 Solve equations`).");
       }
-
       const [subject, date, ...taskArr] = args;
       const task = taskArr.join(" ");
 
       const newDeadline = new Deadline({ subject, date, task });
       await newDeadline.save();
 
-      message.channel.send(`📅 Deadline added for **${subject}** on **${date}**: ${task}`);
-    } catch (err) {
-      console.error(err);
-      message.reply("There was an error adding the deadline. Please try again.");
-    }
-  } else if (content.startsWith("remove ")) {
-      try {
-        const args = content.split(" ").slice(1);
-        if (args.length !== 1) {
-          return message.reply("Please provide the index of the deadline you want to remove (e.g., `remove 1`).");
-        }
-
-        const index = parseInt(args[0], 10);
-        if (isNaN(index) || index < 1) {
-          return message.reply("Please provide a valid index.");
-        }
-
-        const deadlines = await Deadline.find({});
-        if (index > deadlines.length) {
-          return message.reply("No deadline found at the given index.");
-        }
-
-        const deadline = deadlines[index - 1];
-        await Deadline.findByIdAndDelete(deadline._id);
-
-        message.channel.send(`🗑️ Deadline removed for **${deadline.subject}** on **${(deadline.date.toDateString())}**: ${deadline.task}`);
+      message.reply(`📅 Deadline added for **${subject}** on **${date}**: ${task}`);
+    } else if (content.startsWith("remove ")) {
+      const args = content.split(" ").slice(1);
+      const index = parseInt(args[0], 10);
+      if (isNaN(index) || index < 1) {
+        return message.reply("Please provide a valid index.");
       }
-      catch(error){
-        console.log("Error in removing deadline:", error);
+      const deadlines = await Deadline.find({});
+      if (index > deadlines.length) {
+        return message.reply("No deadline found at the given index.");
       }
-  } else if (content.includes("who created you") || content.includes("who is your creator")) {
-    const replies = [
-      "Sabin le banako ho malai, aafule assignments garna nasamjhiyera.",
-      "Jaile assignment xa vanera birsine manxele banako ho malai, Sabin.",
-      "Khai yr birse feri sodhata.",
-    ];
-    const reply = replies[Math.floor(Math.random() * replies.length)];
-    message.reply(reply);
-  } else if (content.includes("help")) {
+      const deadline = deadlines[index - 1];
+      await Deadline.findByIdAndDelete(deadline._id);
+      message.reply(`🗑️ Deadline removed for **${deadline.subject}**: ${deadline.task}`);
+    } else if (content.includes("who created you") || content.includes("who is your creator")) {
+      const replies = [
+        "Sabin le banako ho malai, aafule assignments garna nasamjhiyera.",
+        "Jaile assignment xa vanera birsine manxele banako ho malai, Sabin.",
+        "Khai yr birse feri sodhata.",
+      ];
+      const reply = replies[Math.floor(Math.random() * replies.length)];
+      message.reply(reply);
+    } else if (content.includes("help")) {
   const helpMessage = `** Hello! I’m Eleven59, your friendly deadline buddy! ⏰**
   I’m here to keep you on track and remind you of those deadlines before they sneak up on you. Let’s face it, most of us love the thrill of the last-minute rush—but hey, I’m here to save you from disaster! 😅
 
@@ -129,32 +137,36 @@ client.on("messageCreate", async (message) => {
 
     message.reply(helpMessage);
   } else if (content.startsWith("suggest ")) {
-      try {
-        const arg = content.split(' ').slice(1);
-        if(arg.length === 0){
-          return message.reply("Please provide a valid command to try. eg. `suggest add_a_new_feature`");
-        }
-        const suggestion = arg.join(' ');
-        await Suggestion.create({
-          name: message.author.username,
-          suggestion: suggestion
-        });
-        message.reply(`Thankyou for the suggestion ${message.author}! I will tell sabin to ${suggestion} in the next update.`);
-      }
-      catch(error){
-        console.log("Error in trying command:", error);
-      }
-  } else {
-    message.reply("I didn't understand that. Type `help` to see the commands you can use.");
+      const suggestion = content.split(" ").slice(1).join(" ");
+      await Suggestion.create({ name: user.username, suggestion });
+      message.reply(`Thanks for the suggestion, ${user}!`);
+    } else {
+      message.reply("I didn't understand that. Type `help` to see the commands you can use.");
+    }
+  } catch (error) {
+    logger.error(`Error handling message: ${error}`);
+    message.reply("An error occurred. Please try again.");
   }
 });
 
+// Schedule task for checking deadlines
+cron.schedule(
+  "30 7 * * *",
+  () => {
+    logger.info("Scheduled task running at 7:30 AM Kathmandu time!");
+    checkDeadlines(client).catch(logger.error);
+  },
+  { timezone: "Asia/Kathmandu" }
+);
 
-setInterval(() => {
-  checkDeadlines(client).catch((err) => console.error(err));
-}, 24 * 60 * 60 * 1000);
-
-client.login(process.env.DISCORD_TOKEN);
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+// Graceful shutdown
+process.on("SIGINT", async () => {
+  logger.info("Shutting down gracefully...");
+  await mongoose.disconnect();
+  client.destroy();
+  process.exit(0);
 });
+
+// Start Express server and Discord bot
+client.login(process.env.DISCORD_TOKEN);
+app.listen(PORT, () => logger.info(`Server is running on port ${PORT}`));
