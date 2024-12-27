@@ -30,40 +30,39 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
-  if(message.content.startsWith('hello' || 'hi')) {
+  if (message.author.bot) return;
+
+  const content = message.content.toLowerCase();
+
+  if (/^(hello|hi)$/i.test(content)) {
     const user = message.author;
     message.reply(`Hello ${user}! Have you completed your assignments?`);
-  }
-
-  if(message.content.startsWith('no')) {
+  } else if (content === "no") {
     message.reply(`Oh no ${message.author}! Please complete your assignments on time.`);
     listDeadlines(message);
-  }
-
-  if(message.content.startsWith("due")) {
+  } else if (content.startsWith("due")) {
     listDeadlines(message);
-  }
+  } else if (content.startsWith("add ")) {
+    try {
+      const args = content.split(" ").slice(1);
+      if (args.length < 3) {
+        return message.reply("Please provide subject, date, and task (e.g., `add Math 2024-12-31 Solve equations`).");
+      }
 
-  if (message.content.startsWith("add ")) {
-    console.log(message.content);
-    const args = message.content.split(" ").slice(1);
-    const subject = args[0];
-    const date = args[1];
-    const task = args.slice(2).join(" ");
+      const [subject, date, ...taskArr] = args;
+      const task = taskArr.join(" ");
 
-    const newDeadline = new Deadline({
-      subject,
-      date,
-      task,
-    });
+      const newDeadline = new Deadline({ subject, date, task });
+      await newDeadline.save();
 
-    await newDeadline.save();
-
-    message.channel.send(
-      `📅 Deadline added for **${subject}** on **${date}**: ${task}`
-    );
+      message.channel.send(`📅 Deadline added for **${subject}** on **${date}**: ${task}`);
+    } catch (err) {
+      console.error(err);
+      message.reply("There was an error adding the deadline. Please try again.");
+    }
   }
 });
+
 
 setInterval(() => {
   checkDeadlines(client).catch((err) => console.error(err));
