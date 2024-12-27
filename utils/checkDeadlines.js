@@ -24,23 +24,7 @@ const checkDeadlines = async (client) => {
               deadline.task
             }`
           );
-      }
-
-      // Notify and delete if the task is overdue
-      if (timeRemaining <= 0) {
-        await client.channels.cache
-          .get(process.env.ELEVEN_CHANNEL_ID)
-          .send(
-            `@everyone ⚠️ **${
-              deadline.subject
-            }** task was due on **${deadline.date.toDateString()}**: ${
-              deadline.task
-            } hope you submitted it!😉`
-          );
-
-        // Delete the deadline without a callback
-        await Deadline.findByIdAndDelete(deadline._id);
-        console.log(`Deleted deadline for ${deadline.subject}`);
+          await Deadline.findByIdAndDelete(deadline._id);
       }
     }
   } catch (err) {
