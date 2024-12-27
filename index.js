@@ -6,6 +6,7 @@ const Deadline = require("./models/deadline");
 const {checkDeadlines, listDeadlines} = require("./utils/deadline");
 const mongoose = require("mongoose");
 const Suggestion = require("./models/suggestion");
+const PORT = process.env.PORT || 3000;
 
 mongoose
   .connect(process.env.MONGODB_URI)
@@ -154,6 +155,6 @@ setInterval(() => {
 }, 24 * 60 * 60 * 1000);
 
 client.login(process.env.DISCORD_TOKEN);
-app.listen(process.env.PORT, () => {
-  console.log(`Server is running on port ${process.env.PORT}`);
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });
