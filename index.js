@@ -7,7 +7,7 @@ const checkDeadlines = require("./utils/checkDeadlines");
 const mongoose = require("mongoose");
 
 mongoose
-  .connect(process.env.MONGO_URI)
+  .connect(process.env.MONGODB_URI)
   .then(() => {
     console.log("Connected to the database");
   })
@@ -30,7 +30,11 @@ client.on("ready", () => {
 });
 
 client.on("messageCreate", async (message) => {
-  if (message.content.startsWith("/deadline")) {
+  if(message.content === "hello") {
+    message.reply("Hello! How can I help you today?");
+  }
+  if (message.content.startsWith("deadline")) {
+    console.log(message.content);
     const args = message.content.split(" ").slice(1);
     const subject = args[0];
     const date = args[1];
