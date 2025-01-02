@@ -1,15 +1,36 @@
-const express = require("express");
+import express from "express";
 const app = express();
-require("dotenv").config();
-const { Client, GatewayIntentBits } = require("discord.js");
-const mongoose = require("mongoose");
-const cron = require("node-cron-tz");
-const winston = require("winston");
-const Deadline = require("./models/deadline");
-const Suggestion = require("./models/suggestion");
-const { checkDeadlines, listDeadlines } = require("./utils/deadline");
+import dotenv from "dotenv";
+dotenv.config();
+import { Client, GatewayIntentBits } from "discord.js";
+import mongoose from "mongoose";
+import cron from "node-cron-tz";
+import winston from "winston";
+import Deadline from "./models/deadline.js";
+import Suggestion from "./models/suggestion.js";
+import { checkDeadlines, listDeadlines } from "./utils/deadline.js";
+import fetch from "node-fetch";
+
+
+
+
 
 const PORT = process.env.PORT || 3000;
+const backendUrl = process.env.SERVER_URL || "http://localhost:5000";
+
+setInterval(()=>{
+  fetch(`${backendUrl}/ping`)
+  .then(res => console.log("Pinged"))
+  .catch(err => console.error("Error in pinging:", err));
+}, 5 * 60 * 1000);
+
+
+
+app.get('/ping', (req, res)=>{
+  res.send('Pong!');
+})
+
+
 
 // Set up Winston logger
 const logger = winston.createLogger({

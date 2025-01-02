@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const suggestionSchema = new mongoose.Schema ({
   name: {
@@ -9,4 +9,5 @@ const suggestionSchema = new mongoose.Schema ({
   }
 })
 
-module.exports = mongoose.model('Suggestion', suggestionSchema);
+const Suggestion = mongoose.model('Suggestion', suggestionSchema);
+export default Suggestion;

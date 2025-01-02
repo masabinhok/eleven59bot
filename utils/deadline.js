@@ -1,5 +1,6 @@
-const Deadline = require("../models/deadline");
-require("dotenv").config();
+import Deadline from "../models/deadline.js";
+import dotenv from "dotenv";
+dotenv.config();
 
 const checkDeadlines = async (client) => {
   const now = new Date();
@@ -59,4 +60,4 @@ try {
     }
 }
 
-module.exports = { checkDeadlines, listDeadlines};
+export { checkDeadlines, listDeadlines };
