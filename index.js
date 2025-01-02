@@ -8,8 +8,25 @@ const winston = require("winston");
 const Deadline = require("./models/deadline");
 const Suggestion = require("./models/suggestion");
 const { checkDeadlines, listDeadlines } = require("./utils/deadline");
+const fetch = require("node-fetch");
+const { reset } = require("nodemon");
 
 const PORT = process.env.PORT || 3000;
+const backendUrl = process.env.SERVER_URL || "http://localhost:5000";
+
+setInterval(()=>{
+  fetch(`${backendUrl}/ping`)
+  .then(res => console.log("Pinged"))
+  .catch(err => console.error("Error in pinging:", err));
+}, 5 * 60 * 1000);
+
+
+
+app.get('/ping', (req, res)=>{
+  res.send('Pong!');
+})
+
+
 
 // Set up Winston logger
 const logger = winston.createLogger({
