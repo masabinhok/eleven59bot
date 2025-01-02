@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "eleven59 is a discord bot for deadlines yayy",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js"
