@@ -79,6 +79,7 @@ client.on("ready", () => {
 // Message handling
 client.on("messageCreate", async (message) => {
   if (message.author.bot) return;
+  if (message.channel.id !== process.env.ELEVEN_CHANNEL_ID) return;
 
   const content = message.content.toLowerCase();
   const user = message.author;
