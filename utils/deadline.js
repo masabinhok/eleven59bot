@@ -31,12 +31,12 @@ const checkDeadlines = async (client) => {
   } catch (err) {
     console.log("Error in checking deadlines:", err);
   }
-  // Notify if no deadlines are due soon
-  if (count === 0) {
-    await client.channels.cache
-      .get(process.env.ELEVEN_CHANNEL_ID)
-      .send("@everyone No deadlines due soon! Enjoy your day! 😊");
-  }
+  // // Notify if no deadlines are due soon
+  // if (count === 0) {
+  //   await client.channels.cache
+  //     .get(process.env.ELEVEN_CHANNEL_ID)
+  //     .send("@everyone No deadlines due soon! Enjoy your day! 😊");
+  // }
 };
 
 const listDeadlines = async (message)=>{
